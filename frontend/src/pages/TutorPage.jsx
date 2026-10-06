@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import api from '../services/api';
 
 export default function TutorPage() {
@@ -124,7 +126,15 @@ export default function TutorPage() {
               {msg.is_demo_mode && (
                 <span className="badge badge-warning" style={{ marginBottom: '0.5rem', display: 'inline-flex' }}>Demo Mode</span>
               )}
-              <div className="markdown-content" style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+              <div className="markdown-content">
+                {msg.role === 'user' ? (
+                  <span style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</span>
+                ) : (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
+                )}
+              </div>
             </div>
           </div>
         ))}
