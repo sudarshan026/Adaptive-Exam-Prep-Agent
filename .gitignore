@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv*/
+.env
+
+# Database
+*.db
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Pytest
+.pytest_cache/
+
+# Uploads
+backend/uploads/
+
+# Logs
+*.log
