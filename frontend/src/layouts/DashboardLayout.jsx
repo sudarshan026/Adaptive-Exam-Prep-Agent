@@ -5,11 +5,15 @@ import { useAuth } from '../context/AuthContext';
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: '📊' },
   { path: '/study-plan', label: 'Study Plan', icon: '📅' },
-  { path: '/syllabus', label: 'Syllabus', icon: '📚' },
+  { path: '/syllabus', label: 'Syllabus', icon: '📖' },
+  { path: '/resources', label: 'Resources', icon: '📚' },
+  { path: '/knowledge-graph', label: 'Knowledge Graph', icon: '🕸️' },
   { path: '/tutor', label: 'AI Tutor', icon: '🤖' },
   { path: '/practice', label: 'Practice', icon: '✏️' },
   { path: '/analytics', label: 'Analytics', icon: '📈' },
+  { path: '/predicted-score', label: 'Score Predictor', icon: '🎯' },
   { path: '/coaching', label: 'Coaching', icon: '🏆' },
+  { path: '/parent-dashboard', label: 'Parent Portal', icon: '👨‍👩‍👦' },
   { path: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 

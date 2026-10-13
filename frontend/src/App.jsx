@@ -16,6 +16,10 @@ import PracticePage from './pages/PracticePage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import CoachingPage from './pages/CoachingPage';
 import SettingsPage from './pages/SettingsPage';
+import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
+import PredictedScorePage from './pages/PredictedScorePage';
+import ResourcesPage from './pages/ResourcesPage';
+import ParentDashboardPage from './pages/ParentDashboardPage';
 
 function App() {
   return (
@@ -39,10 +43,14 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/syllabus" element={<SyllabusPage />} />
             <Route path="/study-plan" element={<StudyPlanPage />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
             <Route path="/tutor" element={<TutorPage />} />
             <Route path="/practice" element={<PracticePage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/predicted-score" element={<PredictedScorePage />} />
             <Route path="/coaching" element={<CoachingPage />} />
+            <Route path="/parent-dashboard" element={<ParentDashboardPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
