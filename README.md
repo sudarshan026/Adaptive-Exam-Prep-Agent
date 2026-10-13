@@ -8,7 +8,7 @@ This system adapts dynamically to a student's performance, available study time,
 
 ## 🏛️ Architecture Overview
 
-![Architecture Diagram](architecture_diagram_1791298910410.jpg)
+![Architecture Diagram](architecture_diagram.png)
 
 The platform is designed around a **10-agent multi-agent system** coordinated by a **Master Orchestrator Agent**. Every agent is a specialized node in the LangGraph state graph responsible for a distinct aspect of the personalized learning pipeline.
 
