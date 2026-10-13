@@ -1,8 +1,8 @@
 # Adaptive AI Exam Prep Agent
 
-An intelligent, **10-agent multi-agent AI exam preparation platform** that acts as a personalized tutor, study planner, assessor, and coach. Built with a robust **FastAPI backend** (powered by LangGraph and LangChain) and a dynamic **React + Vite frontend**.
+An intelligent, **multi-agent AI exam preparation platform** that acts as a personalized tutor, study planner, assessor, and coach. Built with a **FastAPI backend** (powered by LangGraph and LangChain) and a dynamic **React + Vite frontend**.
 
-This system adapts dynamically to a student's performance, available study time, and specific exam syllabus to optimize learning outcomes through a **continuous feedback loop**: *Learn → Practice → Test → Analyze → Adapt → Improve*.
+The system dynamically adapts to a student's performance, available study time, and exam syllabus to optimize learning outcomes through a **continuous feedback loop**: *Learn → Practice → Test → Analyze → Adapt → Improve*.
 
 ---
 
@@ -10,32 +10,34 @@ This system adapts dynamically to a student's performance, available study time,
 
 ![Architecture Diagram](architecture_diagram.png)
 
-The platform is designed around a **10-agent multi-agent system** coordinated by a **Master Orchestrator Agent**. Every agent is a specialized node in the LangGraph state graph responsible for a distinct aspect of the personalized learning pipeline.
+The platform is designed around a **10-agent multi-agent architecture** coordinated by a central **Master Orchestrator Agent**. Each agent is a specialized node in the LangGraph state graph responsible for a specific aspect of the learning pipeline.
 
 ### Master Orchestrator Agent
 > **Coordinates all agents, manages workflow, state, and memory.**
 
-The orchestrator ([`orchestrator.py`](file:///backend/app/agents/orchestrator.py)) serves as the central router in the LangGraph state machine. It receives task requests, inspects state, and conditionally delegates to the appropriate specialist agent node, handling the shared `AgentState` and ensuring seamless cross-agent communication.
+The orchestrator ([`orchestrator.py`](file:///backend/app/agents/orchestrator.py)) acts as the central router in the LangGraph state machine. It evaluates task requirements, inspects global state, conditionally dispatches work to specialist agents, and consolidates outputs within a shared `AgentState`.
 
-### The 10 Specialist Agents (100% Implemented)
+### Specialist Agents
 
-| # | Agent | File | LangGraph Node | Status | Description |
-|---|-------|------|:---:|:---:|-------------|
-| — | **Master Orchestrator** | [`orchestrator.py`](file:///backend/app/agents/orchestrator.py) | ✅ | ✅ Full | State router & workflow director managing agent transitions |
-| 1 | **Student Profiling Agent** | [`profile_analyzer.py`](file:///backend/app/agents/profile_analyzer.py) | ✅ | ✅ Full | Analyzes student background, learning preferences, exam timelines, and baseline strengths/weaknesses |
-| 2 | **Syllabus Parser Agent** | [`syllabus_manager.py`](file:///backend/app/agents/syllabus_manager.py) | ✅ | ✅ Full | Extracts and structures PDF syllabi into subjects and topics with PyMuPDF and LLM hierarchical parsing |
-| 3 | **Resource Discovery Agent** | [`resource_discovery.py`](file:///backend/app/agents/resource_discovery.py) | ✅ | ✅ Full | Discovers curated learning resources (YouTube videos, textbooks, articles, notes, question banks) per topic |
-| 4 | **Study Planner Agent** | [`study_planner.py`](file:///backend/app/agents/study_planner.py) | ✅ | ✅ Full | Generates structured study plans, daily schedules, milestone targets, and spaced revision intervals |
-| 5 | **Teaching Agent** | [`content_tutor.py`](file:///backend/app/agents/content_tutor.py) | ✅ | ✅ Full | Interactive Socratic tutor providing concept explanations, real-world analogies, code/math snippets, and chat |
-| 6 | **Practice Question Generator** | [`question_generator.py`](file:///backend/app/agents/question_generator.py) | ✅ | ✅ Full | Generates calibrated MCQs (easy, medium, hard) with detailed explanations and difficulty balancing |
-| 7 | **Assessment Agent** | [`assessment_agent.py`](file:///backend/app/agents/assessment_agent.py) | ✅ | ✅ Full | Deep quiz analysis, diagnostic scoring, misconception detection, and actionable recommendations |
-| 8 | **Weakness Detection Agent** | [`weakness_detector.py`](file:///backend/app/agents/weakness_detector.py) | ✅ | ✅ Full | Identifies micro-weaknesses, cognitive blockers, error patterns, and calculates urgency ratings |
-| 9 | **Adaptive Planner Agent** | [`adaptive_planner.py`](file:///backend/app/agents/adaptive_planner.py) | ✅ | ✅ Full | Dynamically recalculates study schedules, inserts remedial sessions, and rebalances topic priorities |
-| 10 | **Motivation & Coaching Agent** | [`coaching_advisor.py`](file:///backend/app/agents/coaching_advisor.py) | ✅ | ✅ Full | Delivers motivational coaching, burnout prevention alerts, daily study habits, and streak encouragement |
+| # | Agent | Module | Role & Capabilities |
+|---|-------|--------|---------------------|
+| — | **Master Orchestrator** | [`orchestrator.py`](file:///backend/app/agents/orchestrator.py) | Central workflow director, state manager, and conditional request router |
+| 1 | **Student Profiling Agent** | [`profile_analyzer.py`](file:///backend/app/agents/profile_analyzer.py) | Analyzes student background, learning preferences, target exam dates, and baseline strengths |
+| 2 | **Syllabus Parser Agent** | [`syllabus_manager.py`](file:///backend/app/agents/syllabus_manager.py) | Extracts and structures PDF syllabi into subjects and topics with PyMuPDF and LLM parsing |
+| 3 | **Resource Discovery Agent** | [`resource_discovery.py`](file:///backend/app/agents/resource_discovery.py) | Discovers curated learning materials (YouTube videos, textbooks, articles, notes, and question banks) |
+| 4 | **Study Planner Agent** | [`study_planner.py`](file:///backend/app/agents/study_planner.py) | Creates personalized study schedules, milestones, daily session plans, and revision intervals |
+| 5 | **Teaching Agent** | [`content_tutor.py`](file:///backend/app/agents/content_tutor.py) | Delivers interactive Socratic tutoring, concept explanations, analogies, and markdown math/code |
+| 6 | **Practice Question Generator** | [`question_generator.py`](file:///backend/app/agents/question_generator.py) | Generates calibrated MCQs (easy, medium, hard) with step-by-step explanations |
+| 7 | **Assessment Agent** | [`assessment_agent.py`](file:///backend/app/agents/assessment_agent.py) | Conducts quiz analysis, diagnostic scoring, error classification, and remediation guidance |
+| 8 | **Weakness Detection Agent** | [`weakness_detector.py`](file:///backend/app/agents/weakness_detector.py) | Identifies micro-weaknesses, misconception patterns, root causes, and urgency ratings |
+| 9 | **Adaptive Planner Agent** | [`adaptive_planner.py`](file:///backend/app/agents/adaptive_planner.py) | Dynamically restructures study schedules and inserts revision sessions based on weak areas |
+| 10 | **Motivation & Coaching Agent** | [`coaching_advisor.py`](file:///backend/app/agents/coaching_advisor.py) | Provides motivational coaching, daily study habits, streak reinforcement, and burnout alerts |
 
 ---
 
 ## 🔄 Continuous Feedback Loop
+
+The platform operates through a closed-loop learning cycle:
 
 ```
   ┌─────────┐       ┌──────────┐       ┌─────────┐
@@ -48,45 +50,45 @@ The orchestrator ([`orchestrator.py`](file:///backend/app/agents/orchestrator.py
   └─────────┘       └──────────┘       └─────────┘
 ```
 
-1. **Learn**: Study sessions guided by the **Teaching Agent** and **Resource Discovery Agent**.
-2. **Practice**: Knowledge reinforcement using the **Practice Question Generator**.
-3. **Test**: Timed quizzes and topic assessments analyzed by the **Assessment Agent**.
-4. **Analyze**: Mastery tracking and cognitive diagnosis by the **Weakness Detection Agent**.
-5. **Adapt**: Dynamic schedule rebalancing via the **Adaptive Planner Agent**.
-6. **Improve**: Continuous mastery updates feed back into personalized study plans and coaching.
+1. **Learn**: Concept acquisition guided by the **Teaching Agent** and **Resource Discovery Agent**.
+2. **Practice**: Skill sharpening via adaptive quizzes generated by the **Practice Question Generator**.
+3. **Test**: Timed assessments and topic evaluations diagnosed by the **Assessment Agent**.
+4. **Analyze**: Diagnostic performance breakdown and error classification by the **Weakness Detection Agent**.
+5. **Adapt**: Dynamic plan rescheduling and targeted remediation via the **Adaptive Planner Agent**.
+6. **Improve**: Mastery score updates and habit tracking delivered by the **Motivation & Coaching Agent**.
 
 ---
 
-## 📊 Features & Architecture Mapping
+## 📊 System Components & Capabilities
 
 ### Data Sources
-| Data Source | Status | Implementation |
-|-------------|:---:|----------------|
-| **Syllabus / Curriculum** (PDF, Docs) | ✅ | PyMuPDF text extraction + LLM structured hierarchy generation |
-| **Online Lectures** (YouTube) | ✅ | Resource Discovery Agent curates targeted video lecture recommendations |
-| **Textbooks & Reference Material** | ✅ | Resource Discovery Agent identifies core textbook chapters & readings |
-| **Online Notes & Articles** | ✅ | Resource Discovery Agent discovers authoritative web guides and documentation |
-| **Question Banks & Past Papers** | ✅ | Practice Question Generator + Resource Discovery Agent for past paper banks |
+| Data Source | Format / Provider | Capabilities |
+|-------------|-------------------|--------------|
+| **Syllabus / Curriculum** | PDF, Text Documents | PyMuPDF text extraction + LLM structured hierarchy parsing |
+| **Online Lectures** | YouTube Data API | Automated discovery of targeted video explanations and playlists |
+| **Textbooks & References** | eBooks, Standard Texts | Curated textbook chapter references and authoritative readings |
+| **Online Notes & Articles** | Educational Websites | Discovery of high-quality topic summaries, cheat sheets, and documentation |
+| **Question Banks & Papers** | Past Papers, Quizzes | Topic-calibrated question generation and reference paper alignment |
 
 ### Outputs & User Features
-| Feature | Status | Description |
-|---------|:---:|-------------|
-| **Personalized Study Plan** | ✅ | Week-by-week timeline optimized for exam dates, daily hours, and topic difficulty |
-| **Concept Explanations** | ✅ | Markdown-rendered AI tutoring with follow-up questioning and analogies |
-| **Practice Questions** | ✅ | Multi-tiered difficulty MCQs with instant feedback and answer explanations |
-| **Test Results & Analytics** | ✅ | Comprehensive quiz scoring, accuracy trends, and subject-level performance |
-| **Progress Tracking** | ✅ | Spaced repetition mastery scores (0–100%), streaks, and study logs |
-| **Knowledge Graph** | ✅ | Interactive canvas dependency graph with subject clusters and mastery colors |
-| **Reminders & Revision Schedule** | ✅ | Spaced repetition intervals calculated dynamically and prioritized in daily queues |
-| **Predicted Exam Score** | ✅ | Multi-factor prediction engine factoring mastery, accuracy, coverage, and consistency |
-| **Parent / Teacher Dashboard** | ✅ | Dedicated portal with student overview, readiness letter grades, and syllabus audits |
+| Feature | Module / Page | Description |
+|---------|---------------|-------------|
+| **Personalized Study Plan** | `/study-plan` | Week-by-week schedule optimized for exam deadlines, daily hours, and difficulty |
+| **Interactive AI Tutor** | `/tutor` | Conversational tutor with markdown rendering, LaTeX math support, and follow-ups |
+| **Practice Quizzes** | `/practice` | Difficulty-calibrated MCQs with instant feedback and answer explanations |
+| **Performance Analytics** | `/analytics` | Mastery trends, subject-level distribution charts, and accuracy tracking |
+| **Topic Knowledge Graph** | `/knowledge-graph` | Interactive canvas dependency graph with prerequisite links and subject clusters |
+| **Exam Score Predictor** | `/predicted-score` | Multi-factor prediction model based on mastery, quiz accuracy, coverage, and streak |
+| **Learning Resources** | `/resources` | Topic-based curated library of videos, books, articles, and question banks |
+| **AI Coaching & Strategy** | `/coaching` | Daily study recommendations, streak tracking, and personalized coaching messages |
+| **Parent / Teacher Portal** | `/parent-dashboard` | Academic oversight dashboard with letter grades, syllabus audit, and weakness alerts |
 
 ### Data Layer
-| Store | Implementation | Contents |
-|-------|---------------|----------|
-| **Student Database** | `user.py`, `student.py` | Account credentials, exam profiles, target dates, study hours, streak history |
+| Data Store | Schema / Models | Contents |
+|------------|-----------------|----------|
+| **Student Database** | `user.py`, `student.py` | Account credentials, target exams, available hours, learning preferences |
 | **Knowledge Base** | `syllabus.py` | Parsed syllabi, subjects, topics, prerequisites (`TopicDependency`), resources (`LearningResource`) |
-| **Progress & Analytics Store** | `analytics.py`, `assessment.py` | Test results, question logs, topic mastery metrics, coaching history |
+| **Progress & Analytics Store** | `analytics.py`, `assessment.py` | Assessment attempts, individual responses, topic mastery scores, coaching logs |
 
 ---
 
@@ -117,7 +119,7 @@ Adaptive-Exam-Prep-Agent/
 │   │   │   ├── study_plans.py           # Study plans, sessions, dashboard
 │   │   │   ├── assessments.py           # Quizzes, questions, submission & grading
 │   │   │   ├── tutor.py                 # AI tutor conversations & explanations
-│   │   │   └── analytics.py             # Performance, predicted scores, graph, deep agent endpoints
+│   │   │   └── analytics.py             # Performance, predicted scores, graph, agent hooks
 │   │   ├── models/                      # SQLAlchemy Database Models (16 tables)
 │   │   │   ├── user.py                  # User accounts
 │   │   │   ├── student.py               # Student profiles
@@ -139,12 +141,12 @@ Adaptive-Exam-Prep-Agent/
 ├── frontend/                            # React 19 + Vite Frontend
 │   └── src/
 │       ├── pages/                       # 📄 Application Pages (16 total)
-│       │   ├── LandingPage.jsx          # Public landing & feature showcase
+│       │   ├── LandingPage.jsx          # Public showcase & feature overview
 │       │   ├── LoginPage.jsx            # Student authentication
-│       │   ├── RegisterPage.jsx         # New student onboarding registration
+│       │   ├── RegisterPage.jsx         # New student registration
 │       │   ├── OnboardingPage.jsx       # Target exam, study pace & preferences
 │       │   ├── DashboardPage.jsx        # Learning hub & daily session queue
-│       │   ├── SyllabusPage.jsx         # PDF upload & topic management
+│       │   ├── SyllabusPage.jsx         # PDF upload & topic hierarchy
 │       │   ├── StudyPlanPage.jsx        # Calendar & day-by-day study schedule
 │       │   ├── ResourcesPage.jsx        # 📚 AI Resource Discovery & saved materials
 │       │   ├── KnowledgeGraphPage.jsx   # 🕸️ Interactive topic prerequisite graph
@@ -155,12 +157,13 @@ Adaptive-Exam-Prep-Agent/
 │       │   ├── CoachingPage.jsx         # 🏆 AI coaching advice & daily strategies
 │       │   ├── ParentDashboardPage.jsx  # 👨‍👩‍👦 Parent / Teacher oversight portal
 │       │   └── SettingsPage.jsx         # ⚙️ Student account & exam date settings
-│       ├── components/                  # Common UI components (Navbar, ProtectedRoute)
+│       ├── components/                  # Common UI components
 │       ├── context/                     # Global AuthContext & state
 │       ├── layouts/                     # DashboardLayout with collapsible sidebar
 │       └── services/                    # Axios API client with auth interceptors
 │
 ├── .env.example                         # Environment variable template
+├── architecture_diagram.png             # High-resolution system architecture diagram
 └── README.md
 ```
 
@@ -169,26 +172,26 @@ Adaptive-Exam-Prep-Agent/
 ## 🛠️ Tech Stack
 
 ### Backend
-| Technology | Purpose |
-|------------|---------|
+| Technology | Role |
+|------------|------|
 | **Python 3.10+** | Core programming language |
-| **FastAPI** | Async REST API framework with automatic OpenAPI docs |
+| **FastAPI** | High-performance asynchronous REST API framework |
 | **LangGraph & LangChain** | Multi-agent coordination with state graph and conditional routing |
-| **Groq API** | High-speed LLM inference (Llama-3.3-70b-versatile, OpenAI-compatible) |
-| **SQLAlchemy 2.0 (Async)** | Async ORM with SQLite (default) and PostgreSQL support |
-| **PyMuPDF (fitz)** | Fast PDF syllabus extraction |
-| **Pydantic v2** | Data validation and schema enforcement |
-| **httpx** | Async HTTP client for external integrations |
+| **Groq API** | Low-latency LLM inference (Llama-3.3-70b-versatile, OpenAI-compatible) |
+| **SQLAlchemy 2.0 (Async)** | Asynchronous ORM with SQLite (default) and PostgreSQL support |
+| **PyMuPDF (fitz)** | High-speed PDF syllabus parsing and extraction |
+| **Pydantic v2** | Request validation and schema enforcement |
+| **httpx** | Asynchronous HTTP client for external service integration |
 
 ### Frontend
-| Technology | Purpose |
-|------------|---------|
-| **React 19 + Vite** | Modern reactive UI framework with fast HMR |
+| Technology | Role |
+|------------|------|
+| **React 19 + Vite** | Component-based UI with fast HMR |
 | **React Router DOM v7** | Client-side routing with protected layouts |
 | **HTML5 Canvas / SVG** | Interactive Knowledge Graph visualizer |
-| **Recharts** | Interactive charts for mastery, performance, and predictions |
-| **React-Markdown** | Rich markdown rendering with code highlighting in AI tutor |
-| **Custom Modern CSS** | Dark-mode glassmorphic design system |
+| **Recharts** | Data visualization for mastery scores and performance trends |
+| **React-Markdown** | Rich markdown formatting with code and math rendering |
+| **Custom CSS** | Dark-mode glassmorphic design system |
 
 ---
 
@@ -197,7 +200,7 @@ Adaptive-Exam-Prep-Agent/
 ### Prerequisites
 - **Node.js** (v18+ recommended)
 - **Python** (v3.10+ recommended)
-- **Groq API Key** (optional — the platform includes built-in fallback/demo modes for all agents if no key is supplied)
+- **Groq API Key** (optional — includes built-in fallback modes for offline operation)
 
 ### 1. Clone the Repository
 ```bash
@@ -221,12 +224,11 @@ pip install -r requirements.txt
 
 # Configure environment variables
 cp .env.example .env
-# Open .env and add your GROQ_API_KEY (optional, enables real-time LLM inference)
 
 # Launch backend server
 uvicorn app.main:app --reload --port 8000
 ```
-Backend will be live at `http://localhost:8000`. Interactive Swagger API Docs available at `http://localhost:8000/docs`.
+Backend will be live at `http://localhost:8000`. Interactive API documentation available at `http://localhost:8000/docs`.
 
 ### 3. Frontend Setup
 In a new terminal window:
@@ -246,7 +248,7 @@ Frontend will be live at `http://localhost:5173`.
 | Variable | Required | Default | Description |
 |----------|:--------:|:-------:|-------------|
 | `DATABASE_URL` | No | `sqlite+aiosqlite:///./exam_prep.db` | Database connection string |
-| `JWT_SECRET_KEY` | Yes (in prod) | `dev-secret-key...` | Secret key for JWT signing |
+| `JWT_SECRET_KEY` | Yes (production) | `dev-secret-key...` | Secret key for JWT signing |
 | `GROQ_API_KEY` | No | `""` | Groq API key for LLM agents (demo mode if blank) |
 | `YOUTUBE_API_KEY` | No | `""` | YouTube Data API key for resource discovery |
 | `CORS_ORIGINS` | No | `http://localhost:5173,...` | Allowed CORS origins list |
