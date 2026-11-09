@@ -96,6 +96,19 @@ async def upload_syllabus(
     except Exception as e:
         extracted_text = f"PDF extraction failed: {str(e)}"
     
+    # RAG Semantic Chunking & Indexing
+    if extracted_text and "failed" not in extracted_text.lower():
+        try:
+            from app.services.rag_service import rag_index
+            rag_index.chunk_document(
+                text=extracted_text,
+                source_document=file.filename,
+                user_id=user_id,
+            )
+            logger.info(f"RAG: Document {file.filename} chunked and indexed successfully.")
+        except Exception as e:
+            logger.warning(f"RAG indexing warning: {e}")
+
     # Parse with LangGraph agent or fallback
     parsed_structure = None
     if not settings.is_demo_mode and extracted_text and "failed" not in extracted_text.lower():

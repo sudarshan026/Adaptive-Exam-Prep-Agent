@@ -35,6 +35,31 @@ The orchestrator ([`orchestrator.py`](file:///backend/app/agents/orchestrator.py
 
 ---
 
+## 🧠 Advanced Agentic System Engineering
+
+The platform implements production-grade agentic coordination patterns natively within LangGraph:
+
+### 1. 📚 Retrieval-Augmented Generation (RAG) Curriculum Grounding
+- **Chunking Engine:** Uploaded course syllabus PDFs are parsed with PyMuPDF and split into overlapping sliding-window chunks with topic and subject metadata ([`rag_service.py`](file:///backend/app/services/rag_service.py)).
+- **Lexical & Semantic Matcher:** BM25-inspired keyword overlap scoring with exact phrase matching to retrieve high-yield curriculum fragments for any student inquiry.
+- **Contextual Prompt Injection:** Injects retrieved curriculum excerpts into the Teaching Agent ([`content_tutor.py`](file:///backend/app/agents/content_tutor.py)) and appends transparent citation badges (`*📚 Grounded in Syllabus: <filename.pdf>*`) directly to chat explanations.
+
+### 2. ⚡ Parallel Agent Execution (Fan-Out / Fan-In)
+- **Concurrent Fan-Out:** Rather than sequential bottlenecks, [`parallel_remediation_fanout()`](file:///backend/app/agents/orchestrator.py) executes 3 specialist agents simultaneously via `asyncio.gather()`:
+  1. `detect_weaknesses()`: Identifies critical and moderate topic gaps.
+  2. `discover_resources()`: Curates relevant videos, articles, and question banks.
+  3. `provide_coaching()`: Generates motivational habits and streak guidance.
+- **Fan-In Synthesis:** Aggregates all 3 outputs into a consolidated payload and passes it directly to the **Adaptive Planner** to build a comprehensive, multi-phase remediation strategy.
+- **API Access:** Exposed via LangGraph node `parallel_remediation` and endpoint `POST /api/analytics/parallel-remediation`.
+
+### 3. 🔁 Planner-Reviewer Reflection & Critique Loop
+- **Planner Node:** Generates an initial multi-phase study schedule factoring in student exam proximity and daily hours ([`study_planner.py`](file:///backend/app/agents/study_planner.py)).
+- **Reviewer / Critic Node:** Audits the drafted plan against strict pedagogical rubrics (feasibility, phase balance, weak topic priority, and active recall ratio) and assigns an objective score (0–100).
+- **Conditional Reflection Loop:** Implemented using LangGraph conditional edges (`should_continue_review_loop` in [`orchestrator.py`](file:///backend/app/agents/orchestrator.py)). If the critique score is below threshold, the plan loops back to the Planner with explicit revision directives (up to 3 iterations) before final approval.
+- **UI & API Access:** Exposed via `POST /api/analytics/study-strategy-reviewed` and integrated directly into the Study Plan UI.
+
+---
+
 ## 🔄 Continuous Feedback Loop
 
 The platform operates through a closed-loop learning cycle:
@@ -130,12 +155,15 @@ Adaptive-Exam-Prep-Agent/
 │   │   ├── schemas/                     # Pydantic validation schemas
 │   │   ├── services/                    # Business logic & LLM services
 │   │   │   ├── llm_service.py           # Groq API / LLM abstraction
+│   │   │   ├── rag_service.py           # In-memory BM25 chunking & RAG retrieval engine
 │   │   │   └── mastery_calculator.py    # Spaced repetition & mastery algorithm
 │   │   ├── core/                        # Configuration & security
 │   │   │   ├── config.py                # Environment settings
 │   │   │   └── security.py              # JWT token management & hashing
 │   │   ├── database/                    # Database connection & session setup
 │   │   └── main.py                      # FastAPI application entry point
+│   ├── test_agent_concepts.py           # Comprehensive unit tests for RAG, Parallel, and Planner-Reviewer loops
+│   ├── pytest.ini                       # Asyncio test configuration
 │   └── requirements.txt
 │
 ├── frontend/                            # React 19 + Vite Frontend

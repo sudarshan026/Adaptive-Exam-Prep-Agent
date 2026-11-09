@@ -805,3 +805,74 @@ async def get_study_strategy(
     )
 
     return strategy
+
+
+@router.post("/parallel-remediation")
+async def trigger_parallel_remediation(
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Parallel Agent Execution (Fan-Out/Fan-In):
+
+    Executes Weakness Detection + Resource Discovery + Coaching Advisor concurrently,
+    aggregates results, and passes them to Adaptive Planner.
+    """
+    result = await db.execute(select(StudentProfile).where(StudentProfile.user_id == user_id))
+    profile = result.scalar_one_or_none()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Complete onboarding first")
+
+    # Get weak topics
+    result = await db.execute(
+        select(TopicMastery).where(TopicMastery.user_id == user_id, TopicMastery.mastery_score < 50)
+    )
+    weak_records = result.scalars().all()
+    weak_names = [w.topic_name for w in weak_records if w.topic_name] or ["General Fundamentals"]
+
+    pipeline_output = await invoke_agent(
+        task="parallel_remediation_pipeline",
+        user_id=user_id,
+        db=db,
+        input_data={
+            "topic_name": weak_names[0],
+            "weak_topics": weak_names,
+            "daily_hours": profile.daily_study_hours,
+            "days_remaining": 60,
+            "stats": {"streak": profile.study_streak, "hours": profile.total_study_hours},
+        }
+    )
+    return pipeline_output
+
+
+@router.post("/study-strategy-reviewed")
+async def get_reviewed_study_strategy(
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Planner-Reviewer Feedback Loop:
+
+    Runs Study Planner and Reviewer Critic in a collaborative reflection loop
+    until pedagogical standards are certified.
+    """
+    result = await db.execute(select(StudentProfile).where(StudentProfile.user_id == user_id))
+    profile = result.scalar_one_or_none()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Complete onboarding first")
+
+    result = await db.execute(select(Topic).join(Subject).where(Subject.user_id == user_id))
+    topics = [t.name for t in result.scalars().all()]
+
+    reviewed_strategy = await invoke_agent(
+        task="plan_study_with_review",
+        user_id=user_id,
+        db=db,
+        input_data={
+            "topics": topics or ["Data Structures", "Algorithms", "Operating Systems"],
+            "weak_topics": profile.weak_topics or [],
+            "strong_topics": profile.strong_topics or [],
+            "days_remaining": 60,
+            "daily_hours": profile.daily_study_hours,
+            "exam_type": profile.exam_type,
+        }
+    )
+    return reviewed_strategy

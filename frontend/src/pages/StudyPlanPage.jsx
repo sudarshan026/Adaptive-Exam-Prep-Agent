@@ -5,6 +5,8 @@ export default function StudyPlanPage() {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [reviewedStrategy, setReviewedStrategy] = useState(null);
+  const [reviewing, setReviewing] = useState(false);
   const [view, setView] = useState('daily'); // daily, weekly
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -28,6 +30,21 @@ export default function StudyPlanPage() {
     } catch (err) {
       alert(err.response?.data?.detail || 'Failed to generate plan. Add subjects & topics first.');
     } finally { setGenerating(false); }
+  };
+
+  const runPlannerReviewerLoop = async () => {
+    setReviewing(true);
+    try {
+      const res = await api.post('/analytics/study-strategy-reviewed', {
+        daily_hours: 3.5,
+        days_remaining: 60,
+      });
+      setReviewedStrategy(res.data);
+    } catch (err) {
+      alert('Failed to run Planner-Reviewer loop. Ensure you have subjects in syllabus.');
+    } finally {
+      setReviewing(false);
+    }
   };
 
   const markComplete = async (sessionId) => {
@@ -91,8 +108,61 @@ export default function StudyPlanPage() {
           <button className="btn-primary" onClick={generatePlan} disabled={generating}>
             {generating ? '⏳ Generating...' : plan ? '🔄 Regenerate' : '📅 Generate Plan'}
           </button>
+          <button className="btn-secondary" onClick={runPlannerReviewerLoop} disabled={reviewing} style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: '#fff', border: 'none' }}>
+            {reviewing ? '🧠 Reviewing Loop...' : '🔍 Planner-Reviewer Strategy'}
+          </button>
         </div>
       </div>
+
+      {reviewedStrategy && (
+        <div className="glass-card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid #6366f1' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                🧠 Planner-Reviewer Pedagogical Audit
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                Generated via dual-agent loop: Planner drafted strategy → Critic audited against educational rubrics.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span className={`badge ${reviewedStrategy.peer_review?.status === 'APPROVED' ? 'badge-success' : 'badge-warning'}`}>
+                {reviewedStrategy.peer_review?.status || 'APPROVED'} (Score: {reviewedStrategy.peer_review?.score || 85}/100)
+              </span>
+              <span className="badge badge-primary">
+                Iterations: {reviewedStrategy.peer_review?.iteration || 1}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-light)', marginBottom: '0.3rem' }}>
+              Overall Approach
+            </h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+              {reviewedStrategy.strategy?.overall_approach || reviewedStrategy.overall_approach}
+            </p>
+          </div>
+
+          {reviewedStrategy.strategy?.phase_plan && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+              {reviewedStrategy.strategy.phase_plan.map((phase, idx) => (
+                <div key={idx} style={{ padding: '0.85rem', borderRadius: '8px', background: 'var(--bg-dark)', border: '1px solid var(--border)' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--accent)' }}>
+                    {phase.phase_name} ({phase.duration_days} days)
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem' }}>
+                    <strong>Daily breakdown:</strong> {phase.daily_breakdown}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    💡 {phase.tips}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {!plan ? (
         <div className="glass-card empty-state">

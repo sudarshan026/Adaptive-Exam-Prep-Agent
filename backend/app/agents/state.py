@@ -28,6 +28,13 @@ class AgentState(TypedDict, total=False):
     agents_called: list[str]     # Which agents have executed
     next_agent: Optional[str]    # Next agent to call (for chaining)
 
+    # ─── Advanced Agent Coordination ──────────────────────────
+    retrieved_chunks: list[dict] # RAG retrieved knowledge chunks with citations
+    parallel_outputs: dict       # Aggregated outputs from concurrent fan-out agents
+    review_feedback: Optional[dict] # Reviewer critique in planner-reviewer loop
+    iteration_count: int         # Reflection loop iteration counter
+    is_approved: bool            # Verification approval status
+
 
 def make_state(
     task: str,
