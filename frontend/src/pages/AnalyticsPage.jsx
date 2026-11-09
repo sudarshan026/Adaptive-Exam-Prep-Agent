@@ -6,6 +6,8 @@ export default function AnalyticsPage() {
   const [data, setData] = useState(null);
   const [weakness, setWeakness] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [remediating, setRemediating] = useState(false);
+  const [remediationResult, setRemediationResult] = useState(null);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -21,6 +23,23 @@ export default function AnalyticsPage() {
     finally { setLoading(false); }
   };
 
+  const runParallelRemediation = async () => {
+    setRemediating(true);
+    try {
+      const primaryWeak = weakness?.weak_topics?.[0]?.topic_name || data?.weak_topics?.[0] || 'General';
+      const res = await api.post('/analytics/parallel-remediation', {
+        topic_name: primaryWeak,
+        daily_hours: 3.0,
+        days_remaining: 45,
+      });
+      setRemediationResult(res.data);
+    } catch (err) {
+      alert('Failed to execute parallel remediation.');
+    } finally {
+      setRemediating(false);
+    }
+  };
+
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}><div className="spinner"></div></div>;
   if (!data) return <div className="page-container"><div className="glass-card">Failed to load analytics</div></div>;
 
@@ -28,7 +47,17 @@ export default function AnalyticsPage() {
 
   return (
     <div className="page-container">
-      <h1 className="page-title">📈 Performance Analytics</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <h1 className="page-title" style={{ margin: 0 }}>📈 Performance Analytics</h1>
+        <button
+          className="btn-primary"
+          onClick={runParallelRemediation}
+          disabled={remediating}
+          style={{ background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)', border: 'none', fontWeight: 600 }}
+        >
+          {remediating ? '⚡ Running 3 Agents in Parallel...' : '⚡ Multi-Agent Parallel Remediation'}
+        </button>
+      </div>
 
       {/* Stats */}
       <div className="grid-stats" style={{ marginBottom: '1.5rem' }}>
@@ -49,6 +78,79 @@ export default function AnalyticsPage() {
           <div className="stat-label">Study Hours</div>
         </div>
       </div>
+
+      {/* Parallel Remediation Fan-Out / Fan-In Card */}
+      {remediationResult && (
+        <div className="glass-card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid #10b981' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                ⚡ Multi-Agent Parallel Remediation Pipeline
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                Concurrently executed: <strong>Weakness Detection</strong> ⚡ <strong>Resource Discovery</strong> ⚡ <strong>Coaching Advisor</strong> → Consolidated into <strong>Adaptive Planner</strong>.
+              </p>
+            </div>
+            <span className="badge badge-success">
+              Mode: {remediationResult.coordination_mode || 'fan_out_fan_in_parallel'}
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+            {/* Weakness analysis branch */}
+            <div style={{ padding: '0.85rem', borderRadius: '8px', background: 'var(--bg-dark)', border: '1px solid var(--border)' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#ef4444', marginBottom: '0.4rem' }}>
+                🔍 Weakness Diagnosis
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                {remediationResult.parallel_agent_outputs?.weakness_analysis?.overall_diagnosis || 'Identified root causes and targeted remediation areas.'}
+              </p>
+            </div>
+
+            {/* Coaching branch */}
+            <div style={{ padding: '0.85rem', borderRadius: '8px', background: 'var(--bg-dark)', border: '1px solid var(--border)' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f59e0b', marginBottom: '0.4rem' }}>
+                🏆 Coaching Insight
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                {remediationResult.parallel_agent_outputs?.coaching_message || 'Stay consistent and focus on understanding core principles.'}
+              </p>
+            </div>
+
+            {/* Adaptive plan summary */}
+            <div style={{ padding: '0.85rem', borderRadius: '8px', background: 'var(--bg-dark)', border: '1px solid var(--border)' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#10b981', marginBottom: '0.4rem' }}>
+                📅 Adapted Plan
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                {remediationResult.adapted_strategy?.adaptations?.summary || 'Reallocated hours to focus on high-yield topic improvements.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Curated resources */}
+          {remediationResult.parallel_agent_outputs?.discovered_resources?.length > 0 && (
+            <div style={{ marginTop: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.05)' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--primary-light)' }}>
+                📚 Concurrently Discovered Learning Resources
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {remediationResult.parallel_agent_outputs.discovered_resources.map((res, i) => (
+                  <a
+                    key={i}
+                    href={res.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--accent)', textDecoration: 'none' }}
+                  >
+                    🔗 {res.title}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Study Hours Chart */}
