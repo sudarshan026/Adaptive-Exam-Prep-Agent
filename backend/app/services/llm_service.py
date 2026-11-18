@@ -13,8 +13,9 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
-FALLBACK_MODEL = "llama-3.1-8b-instant"
+DEFAULT_MODEL = "openai/gpt-oss-20b"
+FALLBACK_MODEL = "openai/gpt-oss-120b"
+ADDITIONAL_MODELS = ["qwen/qwen3.8-27b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
 
 
 async def _call_groq(
@@ -73,7 +74,7 @@ async def call_llm(
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
 
-    models_to_try = [DEFAULT_MODEL, FALLBACK_MODEL]
+    models_to_try = [DEFAULT_MODEL, FALLBACK_MODEL] + ADDITIONAL_MODELS
 
     for model in models_to_try:
         try:
@@ -86,10 +87,9 @@ async def call_llm(
                 e.response.status_code, model,
                 e.response.text[:500],
             )
-            # If model is decommissioned/unavailable, try next model
-            if e.response.status_code in (400, 404):
+            # If model is unavailable (400, 404) or rate-limited (429), try next model
+            if e.response.status_code in (400, 404, 429):
                 continue
-            # For other HTTP errors (rate limit, auth), don't retry with different model
             return None
         except httpx.TimeoutException:
             logger.error("Groq API request timed out with model %s", model)
