@@ -11,36 +11,70 @@ from sqlalchemy import select, delete
 logger = logging.getLogger(__name__)
 
 def _basic_syllabus_parse(text: str) -> dict:
-    """Fallback basic heuristic parsing for syllabus text."""
+    """Robust heuristic parsing for syllabus text extracting real subjects and topics."""
+    import re
     subjects = []
     current_subject = None
     
-    # Try to find common syllabus headers
-    lines = text.split("\n")
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
+    
     for line in lines:
-        line = line.strip()
-        if not line:
+        if len(line) <= 2 or line.isdigit():
             continue
             
-        # Very simple heuristic: ALL CAPS lines might be subjects if short
-        if line.isupper() and 3 < len(line) < 50 and not any(c.isdigit() for c in line):
+        # Subject detection heuristics
+        subject_match = re.match(r'^(Subject|Course|Paper\s*\d*|Section\s*[A-Z]|Part\s*[IVX]+)\s*[:.-]\s*(.+)', line, re.I)
+        if subject_match:
+            current_subject = {"name": subject_match.group(2).strip().title(), "topics": []}
+            subjects.append(current_subject)
+            continue
+        elif (line.isupper() and 3 < len(line) < 60 and not any(c.isdigit() for c in line) and not line.startswith(('PAGE', 'TOTAL', 'MARKS', 'HOURS', 'SEMESTER'))):
             current_subject = {"name": line.title(), "topics": []}
             subjects.append(current_subject)
-        # Lines with roman numerals or 'Module X' might be topics
-        elif current_subject and (re.match(r'^(Module|Unit|Chapter)\s+\d+', line, re.I) or 
-                                re.match(r'^[IVXLCDM]+\.', line)):
-            current_subject["topics"].append({
-                "name": re.sub(r'^(Module|Unit|Chapter)\s+\d+[:.-]*\s*|^[IVXLCDM]+\.[:.-]*\s*', '', line, flags=re.I).strip(),
-                "difficulty": "medium",
-                "estimated_hours": 2.0
-            })
+            continue
             
-    # If we couldn't parse subjects, create a generic one
-    if not subjects:
+        # Topic detection heuristics
+        is_topic_line = (
+            re.match(r'^(Module|Unit|Chapter|Topic)\s+\d+[:.-]*\s*(.+)', line, re.I) or
+            re.match(r'^[IVXLCDM]+\.[:.-]*\s*(.+)', line) or
+            re.match(r'^\d+(\.\d+)?[:.)-]\s*(.+)', line) or
+            re.match(r'^[-*•]\s*(.+)', line)
+        )
+        
+        if is_topic_line:
+            topic_name = is_topic_line.group(len(is_topic_line.groups())).strip()
+            if 3 <= len(topic_name) <= 120:
+                if not current_subject:
+                    current_subject = {"name": "Core Curriculum", "topics": []}
+                    subjects.append(current_subject)
+                current_subject["topics"].append({
+                    "name": topic_name,
+                    "difficulty": "medium",
+                    "estimated_hours": 2.0
+                })
+        elif current_subject and 5 <= len(line) <= 80 and not line.endswith(':'):
+            if len(current_subject["topics"]) < 10 and not any(line.lower().startswith(x) for x in ['page', 'credits', 'prerequisite', 'reference', 'textbook']):
+                current_subject["topics"].append({
+                    "name": line,
+                    "difficulty": "medium",
+                    "estimated_hours": 2.0
+                })
+                
+    # Filter subjects that ended up with 0 topics if other populated subjects exist
+    populated = [s for s in subjects if s.get("topics")]
+    if populated:
+        subjects = populated
+
+    # If still no subjects/topics found, extract non-trivial lines
+    if not subjects or not any(s.get("topics") for s in subjects):
+        extracted_topics = [
+            {"name": line[:100], "difficulty": "medium", "estimated_hours": 2.0}
+            for line in lines
+            if 10 < len(line) < 100 and not any(w in line.lower() for w in ['copyright', 'http', 'page', 'author', 'university', 'syllabus'])
+        ][:12]
         subjects = [{
-            "name": "General Syllabus", 
-            "topics": [{"name": line[:100], "difficulty": "medium", "estimated_hours": 1.0} 
-                      for line in lines if line and len(line) > 10][:10] # Take up to 10 non-empty lines as topics
+            "name": "Course Curriculum",
+            "topics": extracted_topics if extracted_topics else [{"name": "Core Concepts & Fundamentals", "difficulty": "medium", "estimated_hours": 2.0}]
         }]
         
     return {"subjects": subjects}

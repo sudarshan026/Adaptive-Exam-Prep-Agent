@@ -59,27 +59,15 @@ Provide a JSON response in this exact format:
         except Exception as e:
             logger.error("Failed to parse LLM response for syllabus: %s", e)
     
-    if not parsed_syllabus:
-        # Fallback basic structure
-        parsed_syllabus = {
-            "subjects": [
-                {
-                    "name": f"{exam_type} Core Fundamentals",
-                    "description": "Auto-generated subject based on extraction failure",
-                    "weightage": 1.0,
-                    "color": "#6366f1",
-                    "topics": [
-                        {
-                            "name": "Topic 1 from syllabus",
-                            "description": "Review text to map manually",
-                            "difficulty": "medium",
-                            "estimated_hours": 2.0
-                        }
-                    ]
-                }
-            ]
-        }
-        
+    if not parsed_syllabus or not parsed_syllabus.get("subjects"):
+        # Intelligently extract real subjects and topics directly from the syllabus text
+        try:
+            from app.api.syllabus import _basic_syllabus_parse
+            parsed_syllabus = _basic_syllabus_parse(raw_text)
+        except Exception as e:
+            logger.warning("Heuristic syllabus parse fallback failed: %s", e)
+            parsed_syllabus = {}
+
     return {
         "result": {"parsed_syllabus": parsed_syllabus},
         "agents_called": state.get("agents_called", []) + ["syllabus_manager"],
