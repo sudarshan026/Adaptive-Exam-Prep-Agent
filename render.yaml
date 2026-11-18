@@ -40,3 +40,9 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: aaiea-backend
+          envVarKey: RENDER_EXTERNAL_URL

@@ -33,14 +33,29 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS Configuration
+cors_origins = settings.cors_origins_list
+allow_all = "*" in cors_origins or not cors_origins
+
+if allow_all:
+    # Browsers strictly forbid allow_origins=["*"] when allow_credentials=True.
+    # allow_origin_regex=r".*" dynamically matches and reflects the requesting origin, safely enabling credentials.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[],
+        allow_origin_regex=r".*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Import and register routers
 from app.api.auth import router as auth_router
