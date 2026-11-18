@@ -31,9 +31,17 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
     
     @property
+    def effective_groq_key(self) -> Optional[str]:
+        """Safely fetch and sanitize Groq API key from settings or OS environment."""
+        key = self.GROQ_API_KEY or os.environ.get("GROQ_API_KEY")
+        if key:
+            key = key.strip().strip("'\"")
+        return key or None
+
+    @property
     def is_demo_mode(self) -> bool:
         """App runs in demo mode when no Groq API key is configured."""
-        return not self.GROQ_API_KEY or self.GROQ_API_KEY.strip() == ""
+        return not self.effective_groq_key
     
     @property
     def is_sqlite(self) -> bool:

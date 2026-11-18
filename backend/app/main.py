@@ -91,4 +91,10 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    return {"status": "healthy", "demo_mode": settings.is_demo_mode}
+    key = settings.effective_groq_key
+    return {
+        "status": "healthy",
+        "demo_mode": settings.is_demo_mode,
+        "groq_configured": bool(key),
+        "groq_key_prefix": key[:8] + "..." if key else None,
+    }

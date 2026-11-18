@@ -60,12 +60,13 @@ async def call_llm(
     Returns None if the API key is missing (demo mode) or on error.
     Automatically falls back to a secondary model if the primary fails.
     """
-    if settings.is_demo_mode:
-        logger.debug("LLM call skipped — demo mode (no GROQ_API_KEY)")
+    key = settings.effective_groq_key
+    if not key:
+        print("[LLM Service] Skipped: No GROQ_API_KEY found in settings or environment.", flush=True)
         return None
 
     headers = {
-        "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+        "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
     }
 
@@ -78,27 +79,24 @@ async def call_llm(
 
     for model in models_to_try:
         try:
+            print(f"[LLM Service] Calling Groq with model: {model}...", flush=True)
             text = await _call_groq(headers, messages, model, temperature, max_tokens, json_mode)
-            logger.info("LLM call succeeded with model: %s", model)
+            print(f"[LLM Service] Success with model: {model}!", flush=True)
             return text
         except httpx.HTTPStatusError as e:
-            logger.warning(
-                "Groq API HTTP error %s with model %s: %s",
-                e.response.status_code, model,
-                e.response.text[:500],
-            )
+            print(f"[LLM Service] HTTP error {e.response.status_code} with model {model}: {e.response.text[:200]}", flush=True)
             # If model is unavailable (400, 404) or rate-limited (429), try next model
             if e.response.status_code in (400, 404, 429):
                 continue
             return None
         except httpx.TimeoutException:
-            logger.error("Groq API request timed out with model %s", model)
+            print(f"[LLM Service] Timeout with model: {model}", flush=True)
             continue
         except Exception as e:
-            logger.error("Groq API error with model %s: %s", model, e)
+            print(f"[LLM Service] Error with model {model}: {e}", flush=True)
             continue
 
-    logger.error("All Groq models failed")
+    print("[LLM Service] All Groq models failed.", flush=True)
     return None
 
 
