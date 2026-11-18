@@ -39,6 +39,16 @@ class Settings(BaseSettings):
     def is_sqlite(self) -> bool:
         return "sqlite" in self.DATABASE_URL
     
+    @property
+    def async_database_url(self) -> str:
+        """Ensure PostgreSQL connection strings use the asyncpg async dialect."""
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
+    
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 

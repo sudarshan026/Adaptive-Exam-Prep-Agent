@@ -10,7 +10,7 @@ if settings.is_sqlite:
     connect_args["check_same_thread"] = False
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.async_database_url,
     echo=settings.APP_DEBUG,
     connect_args=connect_args,
 )

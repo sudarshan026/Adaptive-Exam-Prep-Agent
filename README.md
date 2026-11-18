@@ -2,6 +2,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/sudarshan026/Adaptive-Exam-Prep-Agent)
 [![Technical Article](https://img.shields.io/badge/Technical_Article-Architecture_&_Design_Doc-6366f1?style=for-the-badge&logo=markdown)](ARTICLE.md)
+[![Deployment Guide](https://img.shields.io/badge/Deployment_Guide-Render_&_Railway-10b981?style=for-the-badge&logo=render)](DEPLOYMENT.md)
 
 An intelligent, **multi-agent AI exam preparation platform** that acts as a personalized tutor, study planner, assessor, and coach. Built with a **FastAPI backend** (powered by LangGraph and LangChain) and a dynamic **React + Vite frontend**.
 
