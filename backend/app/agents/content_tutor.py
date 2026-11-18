@@ -60,15 +60,27 @@ Provide a clear, engaging, and well-structured explanation using markdown. Inclu
     
     if not response_text:
         is_demo = True
+        display_topic = topic_name or (message[:50] + "..." if len(message) > 50 else message) or "Concept"
         if retrieved_chunks:
             top_excerpt = retrieved_chunks[0].text.strip()
-            response_text = f"**{topic_name or 'Concept'} Overview**\n\nBased on your curriculum:\n> {top_excerpt}\n\n*Key takeaway:* Focus on understanding the core definitions and problem-solving steps for this topic."
+            response_text = (
+                f"### {display_topic}\n\n"
+                f"**From your uploaded curriculum:**\n> {top_excerpt}\n\n"
+                f"*Core Focus:* Practice problem-solving and review foundational principles for this topic.\n\n"
+                f"> 💡 *Operating in **Demo Mode** (no `GROQ_API_KEY` configured on backend). "
+                f"Add your free Groq API key to your server environment variables to enable full live LLM explanations.*"
+            )
         else:
-            response_text = f"**{topic_name or 'Concept'} Overview**\n\nThis core exam topic covers fundamental principles, standard problem variations, and efficient solution techniques. Practice foundational problems to build intuition."
+            response_text = (
+                f"### {display_topic}\n\n"
+                f"This exam topic involves core theoretical principles, standard problem patterns, and analytical reasoning.\n\n"
+                f"> 💡 *Operating in **Demo Mode** (no `GROQ_API_KEY` configured on backend). "
+                f"To enable live AI answers with Llama-3.3, add a free `GROQ_API_KEY` in your Render / server environment variables.*"
+            )
         suggested_questions = [
-            f"What are common exam questions for {topic_name or 'this topic'}?",
-            f"Can you provide a practice problem on {topic_name or 'this topic'}?",
-            "How does this relate to other syllabus units?"
+            f"What are key formulas for {display_topic}?",
+            f"Can you provide a practice problem for {display_topic}?",
+            "What are the most frequent exam questions on this?"
         ]
     else:
         is_demo = False
